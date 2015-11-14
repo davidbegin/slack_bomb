@@ -7,6 +7,7 @@ module SlackBomb
 
   class << self
     def bomb!
+      @options = parse_options
       threads = (1..5).to_a.map do
         EMOJIS.shuffle.map do |key|
           Thread.new do
@@ -24,8 +25,18 @@ module SlackBomb
 
     private
 
+    def parse_options
+      options = {}
+      OptionParser.new do |opts|
+        opts.on("-c", "--channel", "Channel to post in") do |c|
+          options[:channel] = c
+        end
+      end.parse!
+      options
+    end
+
     def channel
-      "#bot-island"
+     @options[:channel] || "#bot-island"
     end
 
     def name
