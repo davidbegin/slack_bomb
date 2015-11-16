@@ -8,14 +8,20 @@ module SlackBomb
   class << self
     def bomb!
       @options = parse_options
-      threads = (1..5).to_a.map do
-        EMOJIS.shuffle.map do |key|
-          Thread.new do
+      if multithreaded?
+        threads = (1..5).to_a.map do
+          EMOJIS.shuffle.map do |key|
+            Thread.new { SlackBomb.post_to_slack(key) }
+          end
+        end.flatten
+        threads.each(&:join)
+      else
+        (1..5).to_a.map do
+          EMOJIS.shuffle.map do |key|
             SlackBomb.post_to_slack(key)
           end
         end
-      end.flatten
-      threads.each(&:join)
+      end
     end
 
     def post_to_slack(key)
@@ -29,8 +35,8 @@ module SlackBomb
       options = {}
       OptionParser.new do |opts|
         opts.on("-c", "--channel", "Channel to post in") do |c|
-          options[:channel] = c
         end
+          options[:channel] = c
       end.parse!
       options
     end
@@ -60,6 +66,10 @@ module SlackBomb
 
     def slack_hook
       "https://hooks.slack.com/services/YOUR/SLACK/API_KEY"
+    end
+
+    def multithreaded?
+      false
     end
   end
 
