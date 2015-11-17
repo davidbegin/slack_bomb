@@ -9,29 +9,50 @@ module SlackBomb
 
   class << self
     def bomb!
+      Base.new.bomb!
+    end
+  end
+
+  class Base
+    def initialize
       @options = parse_options
+    end
+
+    def bomb!
       if multithreaded?
         threads = (1..5).to_a.map do
           EMOJIS.shuffle.map do |key|
-            Thread.new { SlackBomb.post_to_slack(key) }
+            Thread.new { post_to_slack(key) }
           end
         end.flatten
         threads.each(&:join)
       else
         (1..5).to_a.map do
           EMOJIS.shuffle.map do |key|
-            SlackBomb.post_to_slack(key)
+            post_to_slack(key)
           end
         end
       end
     end
 
+    private
+
     def post_to_slack(key)
-      system full_curl(key)
+      if dry_run?
+        puts full_curl(key)
+      else
+        system full_curl(key)
+      end
       sleep API_BUFFER
     end
 
-    private
+    def dry_run?
+      true
+    end
+
+    def multithreaded?
+      false
+    end
 
     def parse_options
       options = {}
@@ -72,10 +93,6 @@ module SlackBomb
 
     def slack_hook
       "https://hooks.slack.com/services/YOUR/SLACK/API_KEY"
-    end
-
-    def multithreaded?
-      false
     end
   end
 end
