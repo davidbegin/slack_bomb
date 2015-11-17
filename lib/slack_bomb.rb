@@ -19,7 +19,7 @@ module SlackBomb
     end
 
     def bomb!
-      if multithreaded?
+      if multi_threaded?
         multi_threaded_slack_bomb
       else
         single_threaded_slack_bomb
@@ -65,8 +65,8 @@ module SlackBomb
       @options[:dry_run] || false
     end
 
-    def multithreaded?
-      false
+    def multi_threaded?
+      @options[:multi_threaded] || false
     end
 
     def parse_options
@@ -94,7 +94,15 @@ module SlackBomb
           "--sleep=SLEEP",
           "How long to wait inbetween requests."
         ) do |sleep|
-          options[:sleep] = 10
+          options[:sleep] = sleep.to_f
+        end
+
+        opts.on(
+          "-m",
+          "--multi-threaded",
+          "Call to slack with multiple threads"
+        ) do
+          options[:multi_threaded] = true
         end
 
         opts.on_tail(
