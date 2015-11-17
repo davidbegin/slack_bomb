@@ -29,21 +29,17 @@ module SlackBomb
     private
 
     def multi_threaded_slack_bomb
-      threads = (1..5).to_a.map do
-        EMOJIS.shuffle.map do |key|
-          Thread.new { post_to_slack(key) }
-          sleep sleep_time
-        end
+      threads = (1..number_of_requests).to_a.map do
+        Thread.new { post_to_slack(EMOJIS.sample) }
+        sleep sleep_time
       end.flatten
       threads.each(&:join)
     end
 
     def single_threaded_slack_bomb
-      (1..5).to_a.map do
-        EMOJIS.shuffle.map do |key|
-          post_to_slack(key)
-          sleep sleep_time
-        end
+      (1..number_of_requests).to_a.map do
+        post_to_slack(EMOJIS.sample)
+        sleep sleep_time
       end
     end
 
@@ -67,6 +63,10 @@ module SlackBomb
 
     def multi_threaded?
       @options[:multi_threaded] || false
+    end
+
+    def number_of_requests
+      @options[:number] || 50
     end
 
     def parse_options
@@ -103,6 +103,14 @@ module SlackBomb
           "Call to slack with multiple threads"
         ) do
           options[:multi_threaded] = true
+        end
+
+        opts.on(
+          "-n",
+          "--number=NUMBER",
+          "Number of request to be made to slack: Default: 50"
+        ) do |number|
+          options[:number] = number
         end
 
         opts.on_tail(
