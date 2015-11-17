@@ -1,9 +1,11 @@
 require "slack_bomb/version"
 require 'optparse'
+require 'yaml'
 require 'faker'
 
 module SlackBomb
   API_BUFFER = 0.02
+  EMOJIS = YAML.load_file("config/emojis.yml").fetch("emojis").map(&:to_sym)
 
   class << self
     def bomb!
@@ -76,44 +78,4 @@ module SlackBomb
       false
     end
   end
-
-  EMOJIS = [
-    :neckbeard,
-    :no_good,
-    :hurtrealbad,
-    :whale,
-    :space_invader,
-    :horse_racing,
-    :bowtie,
-    :stuck_out_tongue_winking_eye,
-    :goberserk,
-    :squirrel,
-    :octopus,
-    :sun_with_face,
-    :boar,
-    :eyes,
-    :dragon_face,
-    :neutral_face,
-    :shit,
-    :smiling_imp,
-    :lips,
-    :koala,
-    :girl,
-    :muscle,
-    :dizzy_face,
-    :bride_with_veil,
-    :pray,
-    :man,
-    :speak_no_evil,
-    :trollface,
-    :ghost,
-    :dolls,
-    :octocat,
-    :fish,
-    :cop,
-    :flushed,
-    :rocket,
-    :honey_pot,
-    :panda_face
-  ]
 end
