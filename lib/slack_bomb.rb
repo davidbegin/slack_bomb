@@ -5,7 +5,8 @@ require 'faker'
 
 module SlackBomb
   API_BUFFER = 1
-  EMOJIS = YAML.load_file("config/emojis.yml").fetch("emojis").map(&:to_sym)
+  EMOJIS     = YAML.load_file("config/emojis.yml").fetch("emojis").map(&:to_sym)
+  SLACK_HOOK = YAML.load_file("config/slack_hook.yml").fetch("slack_hook")
 
   class << self
     def bomb!
@@ -48,11 +49,9 @@ module SlackBomb
     end
 
     def post_to_slack(key)
-      if dry_run?
-        puts "\e[33m"; puts full_curl(key); puts "\e[0m"
-      else
-        system full_curl(key)
-      end
+      puts "\e[33m"; puts full_curl(key); puts "\e[0m"
+      return if dry_run?
+      system full_curl(key)
     end
 
     def dry_run?
@@ -66,8 +65,11 @@ module SlackBomb
     def parse_options
       options = {}
       OptionParser.new do |opts|
-        opts.on("-c", "--channel", "Channel to post in. Example: #bot-island") do |c|
-          options[:channel] = c
+        opts.on(
+          "-c",
+          "--channel=CHANNEL", "Channel to post in. Example: bot-island, becomes #bot-island"
+        ) do |c|
+          options[:channel] = "#" + c
         end
         opts.on_tail("-h", "--help", "Here are all the options Slack Bomb takes") do
           puts opts
@@ -94,14 +96,11 @@ module SlackBomb
           "text": "#{Faker::Company.catch_phrase} is the right solution!",\
           "icon_emoji": ":#{key}:"}' #{slack_hook}
       CURL
+          "icon_emoji": ":#{key}:"}' #{SLACK_HOOK}
     end
 
     def curl_cmd
       "curl -X POST --data-urlencode"
-    end
-
-    def slack_hook
-      "https://hooks.slack.com/services/YOUR/SLACK/API_KEY"
     end
   end
 end
