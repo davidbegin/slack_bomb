@@ -69,6 +69,11 @@ module SlackBomb
       @options[:number] || 50
     end
 
+    def message
+      @options[:message] ||
+        "#{Faker::Company.catch_phrase} is the right solution!"
+    end
+
     def parse_options
       options = {}
       OptionParser.new do |opts|
@@ -98,11 +103,19 @@ module SlackBomb
         end
 
         opts.on(
-          "-m",
+          "-t",
           "--multi-threaded",
           "Call to slack with multiple threads"
         ) do
           options[:multi_threaded] = true
+        end
+
+        opts.on(
+          "-m",
+          "--message=MESSAGE",
+          "What message to bomb slack with. Defaults to random Faker catch phrase."
+        ) do |message|
+          options[:message] = message
         end
 
         opts.on(
@@ -136,7 +149,7 @@ module SlackBomb
         'payload={\
           "channel": "#{channel}",\
           "username": "#{name}",\
-          "text": "#{Faker::Company.catch_phrase} is the right solution!",\
+          "text": "#{message}",\
           "icon_emoji": ":#{key}:"}' #{SLACK_HOOK}
           CURL
     end
