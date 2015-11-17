@@ -54,8 +54,12 @@ module SlackBomb
       system full_curl(key)
     end
 
+    def channel
+      @options[:channel] || "#bot-island"
+    end
+
     def dry_run?
-      true
+      @options[:dry_run] || false
     end
 
     def multithreaded?
@@ -65,22 +69,29 @@ module SlackBomb
     def parse_options
       options = {}
       OptionParser.new do |opts|
+
         opts.on(
           "-c",
-          "--channel=CHANNEL", "Channel to post in. Example: bot-island, becomes #bot-island"
+          "--channel=CHANNEL",
+          "Channel to post in. Example: bot-island, becomes #bot-island"
         ) do |c|
           options[:channel] = "#" + c
         end
+
         opts.on_tail("-h", "--help", "Here are all the options Slack Bomb takes") do
           puts opts
           exit
         end
+
+        opts.on(
+          "-d",
+          "--dry-run", "Don't post to slack, just print Curl command."
+        ) do
+          options[:dry_run] = true
+        end
+
       end.parse!
       options
-    end
-
-    def channel
-      @options[:channel] || "#bot-island"
     end
 
     def name
