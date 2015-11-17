@@ -34,15 +34,19 @@ module SlackBomb
     def parse_options
       options = {}
       OptionParser.new do |opts|
-        opts.on("-c", "--channel", "Channel to post in") do |c|
-        end
+        opts.on("-c", "--channel", "Channel to post in. Example: #bot-island") do |c|
           options[:channel] = c
+        end
+        opts.on_tail("-h", "--help", "Here are all the options Slack Bomb takes") do
+          puts opts
+          exit
+        end
       end.parse!
       options
     end
 
     def channel
-     @options[:channel] || "#bot-island"
+      @options[:channel] || "#bot-island"
     end
 
     def name
