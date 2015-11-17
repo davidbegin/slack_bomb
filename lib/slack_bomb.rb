@@ -4,7 +4,6 @@ require 'yaml'
 require 'faker'
 
 module SlackBomb
-  API_BUFFER = 1
   EMOJIS     = YAML.load_file("config/emojis.yml").fetch("emojis").map(&:to_sym)
   SLACK_HOOK = YAML.load_file("config/slack_hook.yml").fetch("slack_hook")
 
@@ -33,7 +32,7 @@ module SlackBomb
       threads = (1..5).to_a.map do
         EMOJIS.shuffle.map do |key|
           Thread.new { post_to_slack(key) }
-          sleep API_BUFFER
+          sleep sleep_time
         end
       end.flatten
       threads.each(&:join)
@@ -43,7 +42,7 @@ module SlackBomb
       (1..5).to_a.map do
         EMOJIS.shuffle.map do |key|
           post_to_slack(key)
-          sleep API_BUFFER
+          sleep sleep_time
         end
       end
     end
@@ -52,6 +51,10 @@ module SlackBomb
       puts "\e[33m"; puts full_curl(key); puts "\e[0m"
       return if dry_run?
       system full_curl(key)
+    end
+
+    def sleep_time
+      @options[:sleep] || 1
     end
 
     def channel
@@ -78,16 +81,29 @@ module SlackBomb
           options[:channel] = "#" + c
         end
 
-        opts.on_tail("-h", "--help", "Here are all the options Slack Bomb takes") do
-          puts opts
-          exit
+        opts.on(
+          "-d",
+          "--dry-run",
+          "Don't post to slack, just print Curl command."
+        ) do
+          options[:dry_run] = true
         end
 
         opts.on(
-          "-d",
-          "--dry-run", "Don't post to slack, just print Curl command."
+          "-s",
+          "--sleep=SLEEP",
+          "How long to wait inbetween requests."
+        ) do |sleep|
+          options[:sleep] = 10
+        end
+
+        opts.on_tail(
+          "-h",
+          "--help",
+          "Here are all the options Slack Bomb takes"
         ) do
-          options[:dry_run] = true
+          puts opts
+          exit
         end
 
       end.parse!
@@ -100,14 +116,13 @@ module SlackBomb
 
     def full_curl(key)
       <<-CURL
-        #{curl_cmd}\
+      #{curl_cmd}\
         'payload={\
           "channel": "#{channel}",\
           "username": "#{name}",\
           "text": "#{Faker::Company.catch_phrase} is the right solution!",\
-          "icon_emoji": ":#{key}:"}' #{slack_hook}
-      CURL
           "icon_emoji": ":#{key}:"}' #{SLACK_HOOK}
+          CURL
     end
 
     def curl_cmd
