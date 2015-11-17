@@ -4,7 +4,7 @@ require 'yaml'
 require 'faker'
 
 module SlackBomb
-  API_BUFFER = 0.02
+  API_BUFFER = 1
   EMOJIS = YAML.load_file("config/emojis.yml").fetch("emojis").map(&:to_sym)
 
   class << self
@@ -20,30 +20,39 @@ module SlackBomb
 
     def bomb!
       if multithreaded?
-        threads = (1..5).to_a.map do
-          EMOJIS.shuffle.map do |key|
-            Thread.new { post_to_slack(key) }
-          end
-        end.flatten
-        threads.each(&:join)
+        multi_threaded_slack_bomb
       else
-        (1..5).to_a.map do
-          EMOJIS.shuffle.map do |key|
-            post_to_slack(key)
-          end
-        end
+        single_threaded_slack_bomb
       end
     end
 
     private
 
+    def multi_threaded_slack_bomb
+      threads = (1..5).to_a.map do
+        EMOJIS.shuffle.map do |key|
+          Thread.new { post_to_slack(key) }
+          sleep API_BUFFER
+        end
+      end.flatten
+      threads.each(&:join)
+    end
+
+    def single_threaded_slack_bomb
+      (1..5).to_a.map do
+        EMOJIS.shuffle.map do |key|
+          post_to_slack(key)
+          sleep API_BUFFER
+        end
+      end
+    end
+
     def post_to_slack(key)
       if dry_run?
-        puts full_curl(key)
+        puts "\e[33m"; puts full_curl(key); puts "\e[0m"
       else
         system full_curl(key)
       end
-      sleep API_BUFFER
     end
 
     def dry_run?
