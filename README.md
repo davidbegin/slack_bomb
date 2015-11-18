@@ -22,7 +22,17 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+
+```bash
+bin/slack_bomb --help
+    -c, --channel=CHANNEL            Channel to post in. Example: bot-island, becomes #bot-island
+    -d, --dry-run                    Don't post to slack, just print Curl command.
+    -s, --sleep=SLEEP                How long to wait inbetween requests.
+    -t, --multi-threaded             Call to slack with multiple threads
+    -m, --message=MESSAGE            What message to bomb slack with. Defaults to random Faker catch phrase.
+    -n, --number=NUMBER              Number of request to be made to slack: Default: 50
+    -h, --help                       Here are all the options Slack Bomb takes
+```
 
 ## Development
 
