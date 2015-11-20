@@ -12,7 +12,9 @@ git clone git@github.com:davidbegin/slack_bomb.git
 cd slack_bomb
 ```
 
-Then update the config/slack_hook.yml to use your actual slack hook.
+Update the config/slack_hook.yml to use your actual slack hook.
+
+Update config/defaults to your personal preferences.
 
 ## Usage
 

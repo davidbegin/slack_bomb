@@ -6,6 +6,7 @@ require 'faker'
 module SlackBomb
   EMOJIS     = YAML.load_file("config/emojis.yml").fetch("emojis").map(&:to_sym)
   SLACK_HOOK = YAML.load_file("config/slack_hook.yml").fetch("slack_hook")
+  DEFAULTS   = YAML.load_file("config/defaults.yml")
 
   class << self
     def bomb!
@@ -54,7 +55,7 @@ module SlackBomb
     end
 
     def channel
-      @options[:channel] || "#bot-island"
+      @options[:channel] || DEFAULTS["channel"]
     end
 
     def dry_run?
