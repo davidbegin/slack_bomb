@@ -50,7 +50,7 @@ module SlackBomb
           opts.on(
             "-n",
             "--number=NUMBER",
-            "Number of request to be made to slack: Default: 50"
+            "Number of requests to be made to slack. Default: 50"
           ) do |number|
             options[:number] = number
           end
